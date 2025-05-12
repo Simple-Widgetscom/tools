@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Greeting</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fdfdfd;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      transition: background 0.5s, color 0.5s;
+    }
+
+    #greeting {
+      font-size: 8vw;
+      font-weight: 300;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="greeting">Loading...</div>
+
+  <script>
+    function getGreeting() {
+      const hour = new Date().getHours();
+      if (hour >= 5 && hour < 12) return "Good morning";
+      if (hour >= 12 && hour < 18) return "Good afternoon";
+      if (hour >= 18 && hour < 21) return "Good evening";
+      return "Good night";
+    }
+
+    document.getElementById('greeting').textContent = getGreeting();
+  </script>
+</body>
+
+</html>

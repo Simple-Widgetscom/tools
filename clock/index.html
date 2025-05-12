@@ -8,20 +8,28 @@
   <style>
     body {
       margin: 0;
-      background: #fdfdfd;
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
       font-family: 'Helvetica Neue', sans-serif;
+      transition: background 0.5s, color 0.5s;
     }
 
     #clock {
       font-size: 15vw;
-      /* 15% of the viewport width */
-      color: #333;
       font-weight: 300;
       letter-spacing: 0.1vw;
+    }
+
+    .day {
+      background: #fdfdfd;
+      color: #222;
+    }
+
+    .night {
+      background: #111;
+      color: #fdfdfd;
     }
   </style>
 </head>
@@ -32,11 +40,23 @@
   <script>
     function updateClock() {
       const now = new Date();
+      const hours = now.getHours();
+
+      // Switch between day and night mode
+      if (hours >= 7 && hours < 20) {
+        document.body.classList.remove('night');
+        document.body.classList.add('day');
+      } else {
+        document.body.classList.remove('day');
+        document.body.classList.add('night');
+      }
+
       const timeString = now.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
       });
+
       document.getElementById('clock').textContent = timeString;
     }
 

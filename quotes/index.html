@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quote of the Day</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fdfdfd;
+      color: #333;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      padding: 0 2rem;
+    }
+
+    #quote {
+      font-size: 4vw;
+      font-weight: 300;
+      max-width: 700px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="quote">Loading...</div>
+
+  <script>
+    const quotes = [
+      "Breathe. You’re exactly where you need to be.",
+      "Do small things with great love.",
+      "Simplicity is the ultimate sophistication.",
+      "Be present. Be gentle. Be grateful.",
+      "One thing at a time, with full attention.",
+      "The only way to do great work is to love what you do. – Steve Jobs",
+      "Do what you can, with what you have, where you are. – Theodore Roosevelt",
+      "It always seems impossible until it’s done. – Nelson Mandela",
+      "The best time to plant a tree was 20 years ago. The second best time is now. – Chinese Proverb",
+      "You are braver than you believe, stronger than you seem, and smarter than you think. – A.A. Milne",
+      "Everything you can imagine is real. – Pablo Picasso",
+      "Life is what happens when you’re busy making other plans. – John Lennon",
+      "Don’t watch the clock; do what it does. Keep going. – Sam Levenson"
+    ];
+
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    document.getElementById('quote').textContent = quotes[randomIndex];
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Countdown Timer</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fdfdfd;
+      color: #333;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      text-align: center;
+      gap: 2rem;
+    }
+
+    input {
+      font-size: 1.5rem;
+      padding: 0.5rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 0.5rem;
+    }
+
+    #countdown {
+      font-size: 5vw;
+      font-weight: 300;
+    }
+  </style>
+</head>
+
+<body>
+
+  <input type="datetime-local" id="datetimeInput" />
+  <div id="countdown">Select a date and time</div>
+
+  <script>
+    let countdownInterval;
+
+    function startCountdown(targetDate) {
+      clearInterval(countdownInterval);
+
+      countdownInterval = setInterval(() => {
+        const now = new Date();
+        const diff = targetDate - now;
+
+        if (diff <= 0) {
+          document.getElementById('countdown').textContent = "Time's up!";
+          clearInterval(countdownInterval);
+          return;
+        }
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const minutes = Math.floor((diff / (1000 * 60)) % 60);
+        const seconds = Math.floor((diff / 1000) % 60);
+
+        document.getElementById('countdown').textContent =
+          `${days}d ${hours}h ${minutes}m ${seconds}s`;
+      }, 1000);
+    }
+
+    document.getElementById('datetimeInput').addEventListener('change', function () {
+      const selectedDate = new Date(this.value);
+      if (isNaN(selectedDate)) return;
+
+      startCountdown(selectedDate);
+    });
+  </script>
+</body>
+
+</html>

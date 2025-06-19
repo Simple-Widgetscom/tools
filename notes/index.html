@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notepad</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    textarea {
+      flex-grow: 1;
+      width: 100%;
+      padding: 1rem;
+      font-size: 1.2rem;
+      background: #000;
+      color: #fff;
+      border: none;
+      resize: none;
+      outline: none;
+    }
+  </style>
+</head>
+
+<body>
+  <textarea id="notepad" placeholder="Start typing..."></textarea>
+
+  <script>
+    const textarea = document.getElementById('notepad');
+
+    // Load saved text
+    textarea.value = localStorage.getItem('notepadContent') || '';
+
+    // Save on input
+    textarea.addEventListener('input', () => {
+      localStorage.setItem('notepadContent', textarea.value);
+    });
+  </script>
+</body>
+
+</html>

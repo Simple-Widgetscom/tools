@@ -5,50 +5,23 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Local Time</title>
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      font-family: 'Helvetica Neue', sans-serif;
-      transition: background 0.5s, color 0.5s;
-    }
-
-    #clock {
-      font-size: 15vw;
-      font-weight: 300;
-      letter-spacing: 0.1vw;
-    }
-
-    .day {
-      background: #fdfdfd;
-      color: #222;
-    }
-
-    .night {
-      background: #111;
-      color: #fdfdfd;
-    }
-  </style>
+  <link href="../assets/output.css" rel="stylesheet">
 </head>
 
-<body>
-  <div id="clock">Loading...</div>
+<body class="m-0 flex justify-center items-center h-screen font-sans transition-all duration-500 day">
+  <div id="clock" class="text-[15vw] font-light tracking-wider">Loading...</div>
 
   <script>
     function updateClock() {
       const now = new Date();
       const hours = now.getHours();
+      const body = document.body;
 
       // Switch between day and night mode
       if (hours >= 7 && hours < 20) {
-        document.body.classList.remove('night');
-        document.body.classList.add('day');
+        body.className = 'm-0 flex justify-center items-center h-screen font-sans transition-all duration-500 bg-gray-50 text-gray-800';
       } else {
-        document.body.classList.remove('day');
-        document.body.classList.add('night');
+        body.className = 'm-0 flex justify-center items-center h-screen font-sans transition-all duration-500 bg-gray-900 text-gray-50';
       }
 
       const timeString = now.toLocaleTimeString([], {

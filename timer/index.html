@@ -5,52 +5,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Timer</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Helvetica Neue', sans-serif;
-      background: #fdfdfd;
-      color: #333;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      gap: 2rem;
-    }
-
-    #timer {
-      font-size: 6vw;
-      font-weight: 300;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 1rem;
-    }
-
-    button {
-      font-size: 1.2rem;
-      padding: 0.6rem 1.4rem;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 0.6rem;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #555;
-    }
-  </style>
+  <link href="../assets/output.css" rel="stylesheet">
 </head>
 
-<body>
-
-  <div id="timer">00:00</div>
-  <div class="buttons">
-    <button id="startPause">Start</button>
-    <button id="reset">Reset</button>
+<body class="m-0 font-sans bg-gray-50 text-gray-800 flex flex-col justify-center items-center h-screen gap-8">
+  <div id="timer" class="text-[15vw] font-light">00:00</div>
+  <div class="flex gap-4">
+    <button id="startPause"
+      class="text-xl py-3 px-6 bg-gray-800 text-white border-none rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">Start</button>
+    <button id="reset"
+      class="text-xl py-3 px-6 bg-gray-800 text-white border-none rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">Reset</button>
   </div>
 
   <script>
@@ -98,7 +62,7 @@
       updateDisplay();
     });
 
-    updateDisplay(); // initialize
+    updateDisplay();
   </script>
 </body>
 

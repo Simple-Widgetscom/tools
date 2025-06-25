@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Helvetica Neue', sans-serif;
+      background: #fdfdfd;
+      color: #333;
+      padding: 2rem;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 4vw;
+      font-weight: 300;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #222;
+    }
+
+    .controls {
+      text-align: center;
+      margin-bottom: 2rem;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 0.5rem 1rem;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #555;
+    }
+
+    button.active {
+      background: #007acc;
+    }
+
+    .loading {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #666;
+      margin: 2rem 0;
+    }
+
+    .news-item {
+      border-bottom: 1px solid #eee;
+      padding: 1.5rem 0;
+      transition: background 0.3s;
+    }
+
+    .news-item:hover {
+      background: #f9f9f9;
+    }
+
+    .news-item:last-child {
+      border-bottom: none;
+    }
+
+    .news-title {
+      font-size: 1.3rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #222;
+    }
+
+    .news-title a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .news-title a:hover {
+      color: #007acc;
+    }
+
+    .news-meta {
+      font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+    }
+
+    .news-description {
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 0.5rem;
+    }
+
+    .error {
+      text-align: center;
+      color: #cc0000;
+      font-size: 1.2rem;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 8vw;
+      }
+
+      .controls {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      button {
+        width: 200px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Latest News</h1>
+
+    <div class="controls">
+      <button class="category-btn active" data-category="general">General</button>
+      <button class="category-btn" data-category="technology">Technology</button>
+      <button class="category-btn" data-category="business">Business</button>
+      <button class="category-btn" data-category="health">Health</button>
+      <button class="category-btn" data-category="science">Science</button>
+      <button id="refresh-btn">Refresh</button>
+    </div>
+
+    <div id="news-container">
+      <div class="loading">Loading news...</div>
+    </div>
+  </div>
+
+  <script>
+    class NewsApp {
+      constructor() {
+        this.currentCategory = 'general';
+        this.newsContainer = document.getElementById('news-container');
+        this.categoryButtons = document.querySelectorAll('.category-btn');
+        this.refreshButton = document.getElementById('refresh-btn');
+
+        this.initEventListeners();
+        this.loadNews();
+      }
+
+      initEventListeners() {
+        this.categoryButtons.forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            this.setActiveCategory(e.target.dataset.category);
+          });
+        });
+
+        this.refreshButton.addEventListener('click', () => {
+          this.loadNews();
+        });
+      }
+
+      setActiveCategory(category) {
+        this.currentCategory = category;
+
+        // Update active button
+        this.categoryButtons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.category === category);
+        });
+
+        this.loadNews();
+      }
+
+      async loadNews() {
+        this.showLoading();
+
+        try {
+          // Using allorigins.win as a CORS proxy to fetch RSS feeds directly
+          const rssFeeds = {
+            general: 'https://feeds.bbci.co.uk/news/rss.xml',
+            technology: 'https://feeds.bbci.co.uk/news/technology/rss.xml',
+            business: 'https://feeds.bbci.co.uk/news/business/rss.xml',
+            health: 'https://feeds.bbci.co.uk/news/health/rss.xml',
+            science: 'https://feeds.bbci.co.uk/news/science_and_environment/rss.xml'
+          };
+
+          const rssUrl = rssFeeds[this.currentCategory];
+          const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(rssUrl)}`;
+
+          const response = await fetch(proxyUrl);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          const xmlText = data.contents;
+
+          // Parse the XML
+          const parser = new DOMParser();
+          const xmlDoc = parser.parseFromString(xmlText, 'text/xml');
+
+          // Extract articles from RSS
+          const items = xmlDoc.querySelectorAll('item');
+          const articles = Array.from(items).slice(0, 15).map(item => {
+            return {
+              title: item.querySelector('title')?.textContent || 'No title',
+              link: item.querySelector('link')?.textContent || '#',
+              description: item.querySelector('description')?.textContent || '',
+              pubDate: item.querySelector('pubDate')?.textContent || new Date().toISOString(),
+              author: item.querySelector('author')?.textContent || 'BBC News'
+            };
+          });
+
+          this.renderNews(articles);
+        } catch (error) {
+          console.error('Error fetching news:', error);
+          this.showError('Failed to load news. Please try again later.');
+        }
+      }
+
+      showLoading() {
+        this.newsContainer.innerHTML = '<div class="loading">Loading news...</div>';
+      }
+
+      showError(message) {
+        this.newsContainer.innerHTML = `<div class="error">${message}</div>`;
+      }
+
+      renderNews(articles) {
+        if (!articles || articles.length === 0) {
+          this.newsContainer.innerHTML = '<div class="error">No news available.</div>';
+          return;
+        }
+
+        const newsHtml = articles.map(article => {
+          const publishedDate = new Date(article.pubDate).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+
+          // Clean up description - remove HTML tags and limit length
+          let description = article.description || '';
+          description = description.replace(/<[^>]*>/g, ''); // Remove HTML tags
+          description = description.length > 200 ? description.substring(0, 200) + '...' : description;
+
+          return `
+            <article class="news-item">
+              <h2 class="news-title">
+                <a href="${article.link}" target="_blank" rel="noopener noreferrer">
+                  ${article.title}
+                </a>
+              </h2>
+              <div class="news-meta">
+                <time>${publishedDate}</time>
+                ${article.author ? ` • ${article.author}` : ''}
+              </div>
+              ${description ? `<p class="news-description">${description}</p>` : ''}
+            </article>
+          `;
+        }).join('');
+
+        this.newsContainer.innerHTML = newsHtml;
+      }
+    }
+
+    // Initialize the news app when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+      new NewsApp();
+    });
+  </script>
+</body>
+
+</html>

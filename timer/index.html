@@ -1,20 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Timer</title>
   <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
 </head>
 
-<body class="m-0 font-sans bg-gray-50 text-gray-800 flex flex-col justify-center items-center h-screen gap-8">
-  <div id="timer" class="text-[15vw] font-light">00:00</div>
+<body class="m-0 font-sans flex flex-col justify-center items-center h-screen gap-8 transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+  <div id="timer" class="text-[15vw] font-light tracking-wider">00:00</div>
   <div class="flex gap-4">
     <button id="startPause"
-      class="text-xl py-3 px-6 bg-gray-800 text-white border-none rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">Start</button>
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+             hover:opacity-80">Start</button>
     <button id="reset"
-      class="text-xl py-3 px-6 bg-gray-800 text-white border-none rounded-lg cursor-pointer hover:bg-gray-600 transition-colors">Reset</button>
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Reset</button>
   </div>
 
   <script>

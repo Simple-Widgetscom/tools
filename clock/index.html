@@ -1,35 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Local Time</title>
   <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
 </head>
 
-<body class="m-0 flex justify-center items-center h-screen font-sans transition-all duration-500 day">
+<body class="m-0 flex justify-center items-center h-screen font-sans transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
   <div id="clock" class="text-[15vw] font-light tracking-wider">Loading...</div>
 
   <script>
     function updateClock() {
       const now = new Date();
-      const hours = now.getHours();
-      const body = document.body;
-
-      // Switch between day and night mode
-      if (hours >= 7 && hours < 20) {
-        body.className = 'm-0 flex justify-center items-center h-screen font-sans transition-all duration-500 bg-gray-50 text-gray-800';
-      } else {
-        body.className = 'm-0 flex justify-center items-center h-screen font-sans transition-all duration-500 bg-gray-900 text-gray-50';
-      }
-
       const timeString = now.toLocaleTimeString([], {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit'
       });
-
       document.getElementById('clock').textContent = timeString;
     }
 

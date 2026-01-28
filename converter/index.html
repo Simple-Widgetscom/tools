@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unit Converter</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <h1 class="text-4xl font-light mb-8 tracking-wider">Unit Converter</h1>
+
+  <div class="w-full max-w-md">
+    <select id="category"
+      class="w-full p-4 mb-4 text-xl font-light rounded-lg cursor-pointer transition-colors
+             bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50">
+      <option value="length">Length</option>
+      <option value="weight">Weight</option>
+      <option value="temperature">Temperature</option>
+      <option value="volume">Volume</option>
+      <option value="area">Area</option>
+    </select>
+
+    <div class="flex gap-4 items-center mb-4">
+      <div class="flex-1">
+        <input type="number" id="fromValue" placeholder="Enter value"
+          class="w-full p-4 text-2xl font-light rounded-lg text-center transition-colors
+                 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50">
+        <select id="fromUnit"
+          class="w-full p-3 mt-2 font-light rounded-lg cursor-pointer transition-colors
+                 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50">
+        </select>
+      </div>
+
+      <div class="text-3xl font-light">=</div>
+
+      <div class="flex-1">
+        <div id="toValue" class="w-full p-4 text-2xl font-light rounded-lg text-center
+                                 bg-gray-100 dark:bg-gray-700 min-h-14 flex items-center justify-center">
+          0
+        </div>
+        <select id="toUnit"
+          class="w-full p-3 mt-2 font-light rounded-lg cursor-pointer transition-colors
+                 bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50">
+        </select>
+      </div>
+    </div>
+
+    <button onclick="swapUnits()"
+      class="px-6 py-3 text-lg font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">
+      Swap Units
+    </button>
+  </div>
+
+  <script>
+    const conversions = {
+      length: {
+        units: ['Meters', 'Kilometers', 'Centimeters', 'Millimeters', 'Miles', 'Yards', 'Feet', 'Inches'],
+        toBase: { Meters: 1, Kilometers: 1000, Centimeters: 0.01, Millimeters: 0.001, Miles: 1609.344, Yards: 0.9144, Feet: 0.3048, Inches: 0.0254 }
+      },
+      weight: {
+        units: ['Kilograms', 'Grams', 'Milligrams', 'Pounds', 'Ounces', 'Tons'],
+        toBase: { Kilograms: 1, Grams: 0.001, Milligrams: 0.000001, Pounds: 0.453592, Ounces: 0.0283495, Tons: 1000 }
+      },
+      temperature: {
+        units: ['Celsius', 'Fahrenheit', 'Kelvin'],
+        special: true
+      },
+      volume: {
+        units: ['Liters', 'Milliliters', 'Gallons', 'Quarts', 'Pints', 'Cups', 'Fluid Ounces'],
+        toBase: { Liters: 1, Milliliters: 0.001, Gallons: 3.78541, Quarts: 0.946353, Pints: 0.473176, Cups: 0.236588, 'Fluid Ounces': 0.0295735 }
+      },
+      area: {
+        units: ['Square Meters', 'Square Kilometers', 'Square Feet', 'Square Yards', 'Acres', 'Hectares'],
+        toBase: { 'Square Meters': 1, 'Square Kilometers': 1000000, 'Square Feet': 0.092903, 'Square Yards': 0.836127, Acres: 4046.86, Hectares: 10000 }
+      }
+    };
+
+    const categorySelect = document.getElementById('category');
+    const fromValue = document.getElementById('fromValue');
+    const fromUnit = document.getElementById('fromUnit');
+    const toValue = document.getElementById('toValue');
+    const toUnit = document.getElementById('toUnit');
+
+    function populateUnits() {
+      const category = categorySelect.value;
+      const units = conversions[category].units;
+
+      fromUnit.textContent = '';
+      toUnit.textContent = '';
+
+      units.forEach((unit, index) => {
+        const option1 = document.createElement('option');
+        option1.value = unit;
+        option1.textContent = unit;
+        fromUnit.appendChild(option1);
+
+        const option2 = document.createElement('option');
+        option2.value = unit;
+        option2.textContent = unit;
+        if (index === 1) option2.selected = true;
+        toUnit.appendChild(option2);
+      });
+
+      convert();
+    }
+
+    function convertTemperature(value, from, to) {
+      let celsius;
+
+      if (from === 'Celsius') celsius = value;
+      else if (from === 'Fahrenheit') celsius = (value - 32) * 5 / 9;
+      else celsius = value - 273.15;
+
+      if (to === 'Celsius') return celsius;
+      if (to === 'Fahrenheit') return celsius * 9 / 5 + 32;
+      return celsius + 273.15;
+    }
+
+    function convert() {
+      const value = parseFloat(fromValue.value) || 0;
+      const category = categorySelect.value;
+      const from = fromUnit.value;
+      const to = toUnit.value;
+
+      let result;
+
+      if (category === 'temperature') {
+        result = convertTemperature(value, from, to);
+      } else {
+        const toBase = conversions[category].toBase;
+        const baseValue = value * toBase[from];
+        result = baseValue / toBase[to];
+      }
+
+      toValue.textContent = result.toLocaleString(undefined, {
+        maximumFractionDigits: 6,
+        minimumFractionDigits: 0
+      });
+    }
+
+    function swapUnits() {
+      const tempUnit = fromUnit.value;
+      fromUnit.value = toUnit.value;
+      toUnit.value = tempUnit;
+      convert();
+    }
+
+    categorySelect.addEventListener('change', populateUnits);
+    fromValue.addEventListener('input', convert);
+    fromUnit.addEventListener('change', convert);
+    toUnit.addEventListener('change', convert);
+
+    populateUnits();
+  </script>
+</body>
+
+</html>

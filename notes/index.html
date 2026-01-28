@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 
 <head>
   <meta charset="UTF-8">
@@ -8,20 +8,22 @@
   <link href="../assets/output.css" rel="stylesheet">
 </head>
 
-<body class="m-0 p-0 bg-gray-900 text-white flex flex-col h-screen">
+<body class="m-0 p-0 bg-gray-900 text-gray-50 flex flex-col h-screen">
   <textarea id="notepad" placeholder="Start typing..."
-    class="flex-grow w-full p-4 text-[15vw] bg-black text-white border-none resize-none outline-none font-light"></textarea>
+    class="flex-grow w-full p-4 text-2xl bg-gray-900 text-gray-50 border-none resize-none outline-none font-light"></textarea>
 
   <script>
     const textarea = document.getElementById('notepad');
 
-    // Note: localStorage not available in Claude.ai artifacts, using memory storage
-    textarea.value = '';
+    // Load saved content from localStorage
+    const saved = localStorage.getItem('notepadContent');
+    if (saved) {
+      textarea.value = saved;
+    }
 
-    // Simulate save behavior without localStorage
+    // Save content on input
     textarea.addEventListener('input', () => {
-      // In a real environment, this would save to localStorage
-      // localStorage.setItem('notepadContent', textarea.value);
+      localStorage.setItem('notepadContent', textarea.value);
     });
   </script>
 </body>

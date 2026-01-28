@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Generator</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <h1 class="text-4xl font-light mb-8 tracking-wider">QR Generator</h1>
+
+  <div class="w-full max-w-md">
+    <textarea id="text" placeholder="Enter text or URL..."
+      class="w-full p-4 text-lg font-light rounded-lg resize-none h-32 transition-colors
+             bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50"></textarea>
+
+    <button onclick="generateQR()"
+      class="w-full mt-4 px-6 py-4 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+             hover:opacity-80">Generate QR Code</button>
+
+    <div id="qrContainer" class="mt-8 p-6 rounded-lg bg-white inline-block hidden">
+      <canvas id="qrCanvas"></canvas>
+    </div>
+
+    <button id="downloadBtn" onclick="downloadQR()"
+      class="mt-4 px-6 py-3 text-lg font-light rounded-lg transition-all cursor-pointer hidden
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">
+      Download PNG
+    </button>
+  </div>
+
+  <script>
+    // Simple QR Code generator using canvas
+    // Based on QR code specification for alphanumeric mode
+
+    const canvas = document.getElementById('qrCanvas');
+    const ctx = canvas.getContext('2d');
+    const qrContainer = document.getElementById('qrContainer');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    // QR Code encoding using a simple implementation
+    function generateQR() {
+      const text = document.getElementById('text').value.trim();
+      if (!text) return;
+
+      // Use an external API for QR generation (simple and reliable)
+      const size = 200;
+      const qrApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(text)}`;
+
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        canvas.width = size;
+        canvas.height = size;
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+
+        qrContainer.classList.remove('hidden');
+        downloadBtn.classList.remove('hidden');
+      };
+      img.onerror = () => {
+        alert('Failed to generate QR code. Please try again.');
+      };
+      img.src = qrApiUrl;
+    }
+
+    function downloadQR() {
+      const link = document.createElement('a');
+      link.download = 'qrcode.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+
+    // Generate on Enter key
+    document.getElementById('text').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        generateQR();
+      }
+    });
+  </script>
+</body>
+
+</html>

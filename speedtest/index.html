@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speed Test</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+  <h1 class="text-[4rem] font-light mb-8 tracking-wider max-md:text-[2.5rem]">Speed Test</h1>
+
+  <div class="max-w-xl w-full">
+    <div id="currentSpeed" class="text-5xl font-light my-4 min-h-16 flex items-center justify-center max-md:text-3xl">
+      Ready to test
+    </div>
+
+    <div class="w-full h-1 bg-gray-200 dark:bg-gray-700 rounded-full my-4 overflow-hidden">
+      <div id="progressFill" class="h-full bg-gray-800 dark:bg-gray-200 rounded-full transition-all duration-300" style="width: 0%"></div>
+    </div>
+
+    <div id="status" class="text-base opacity-70 my-2">Click "Start Test" to begin</div>
+
+    <button id="startBtn" onclick="startSpeedTest()"
+      class="my-4 px-8 py-4 text-xl font-light rounded-lg cursor-pointer transition-all
+             bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+             hover:opacity-80 disabled:opacity-50 disabled:cursor-not-allowed">Start Test</button>
+
+    <div class="my-4 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50">
+      <div class="text-base opacity-70 mb-2">Download Speed</div>
+      <div id="downloadSpeed" class="text-3xl font-light max-md:text-2xl">-- Mbps</div>
+    </div>
+
+    <div class="my-4 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50">
+      <div class="text-base opacity-70 mb-2">Upload Speed</div>
+      <div id="uploadSpeed" class="text-3xl font-light max-md:text-2xl">-- Mbps</div>
+    </div>
+
+    <div class="my-4 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50">
+      <div class="text-base opacity-70 mb-2">Ping</div>
+      <div id="ping" class="text-3xl font-light max-md:text-2xl">-- ms</div>
+    </div>
+  </div>
+
+  <script>
+    let isTestRunning = false;
+
+    function updateStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+
+    function updateProgress(percent) {
+      document.getElementById('progressFill').style.width = percent + '%';
+    }
+
+    function updateCurrentSpeed(speed) {
+      const display = document.getElementById('currentSpeed');
+      if (speed === null) {
+        display.textContent = 'Ready to test';
+      } else {
+        display.textContent = speed.toFixed(2) + ' Mbps';
+      }
+    }
+
+    async function measurePing() {
+      updateStatus('Measuring ping...');
+      const pingResults = [];
+
+      for (let i = 0; i < 5; i++) {
+        const start = performance.now();
+        try {
+          await fetch('https://httpbin.org/bytes/1', {
+            method: 'GET',
+            cache: 'no-cache'
+          });
+          const end = performance.now();
+          pingResults.push(end - start);
+        } catch (error) {
+          console.error('Ping test failed:', error);
+        }
+        updateProgress((i + 1) * 20);
+      }
+
+      const avgPing = pingResults.reduce((a, b) => a + b, 0) / pingResults.length;
+      document.getElementById('ping').textContent = Math.round(avgPing) + ' ms';
+      return avgPing;
+    }
+
+    async function measureDownloadSpeed() {
+      updateStatus('Testing download speed...');
+      updateProgress(0);
+
+      const testSizes = [1, 5, 10];
+      const speeds = [];
+
+      for (let i = 0; i < testSizes.length; i++) {
+        const size = testSizes[i];
+        const url = `https://httpbin.org/bytes/${size * 1024 * 1024}`;
+
+        const startTime = performance.now();
+        try {
+          const response = await fetch(url, { cache: 'no-cache' });
+          const data = await response.blob();
+          const endTime = performance.now();
+
+          const duration = (endTime - startTime) / 1000;
+          const bitsPerSecond = (data.size * 8) / duration;
+          const mbps = bitsPerSecond / (1024 * 1024);
+
+          speeds.push(mbps);
+          updateCurrentSpeed(mbps);
+          updateProgress((i + 1) * 33);
+        } catch (error) {
+          console.error('Download test failed:', error);
+          updateStatus('Download test failed, retrying...');
+        }
+      }
+
+      const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+      document.getElementById('downloadSpeed').textContent = avgSpeed.toFixed(2) + ' Mbps';
+      return avgSpeed;
+    }
+
+    async function measureUploadSpeed() {
+      updateStatus('Testing upload speed...');
+      updateProgress(0);
+
+      const testSizes = [0.5, 1, 2];
+      const speeds = [];
+
+      for (let i = 0; i < testSizes.length; i++) {
+        const size = testSizes[i] * 1024 * 1024;
+        const testData = new Blob([new ArrayBuffer(size)]);
+
+        const formData = new FormData();
+        formData.append('file', testData, 'test.bin');
+
+        const startTime = performance.now();
+        try {
+          await fetch('https://httpbin.org/post', {
+            method: 'POST',
+            body: formData,
+            cache: 'no-cache'
+          });
+          const endTime = performance.now();
+
+          const duration = (endTime - startTime) / 1000;
+          const bitsPerSecond = (size * 8) / duration;
+          const mbps = bitsPerSecond / (1024 * 1024);
+
+          speeds.push(mbps);
+          updateCurrentSpeed(mbps);
+          updateProgress((i + 1) * 33);
+        } catch (error) {
+          console.error('Upload test failed:', error);
+          updateStatus('Upload test failed, retrying...');
+        }
+      }
+
+      const avgSpeed = speeds.reduce((a, b) => a + b, 0) / speeds.length;
+      document.getElementById('uploadSpeed').textContent = avgSpeed.toFixed(2) + ' Mbps';
+      return avgSpeed;
+    }
+
+    async function startSpeedTest() {
+      if (isTestRunning) return;
+
+      isTestRunning = true;
+      const startBtn = document.getElementById('startBtn');
+      startBtn.disabled = true;
+      startBtn.textContent = 'Testing...';
+
+      updateCurrentSpeed(null);
+      document.getElementById('downloadSpeed').textContent = '-- Mbps';
+      document.getElementById('uploadSpeed').textContent = '-- Mbps';
+      document.getElementById('ping').textContent = '-- ms';
+
+      try {
+        await measurePing();
+        await measureDownloadSpeed();
+        await measureUploadSpeed();
+
+        updateStatus('Test completed!');
+        updateProgress(100);
+        updateCurrentSpeed(null);
+      } catch (error) {
+        console.error('Speed test failed:', error);
+        updateStatus('Test failed. Please try again.');
+      } finally {
+        isTestRunning = false;
+        startBtn.disabled = false;
+        startBtn.textContent = 'Start Test';
+      }
+    }
+  </script>
+</body>
+
+</html>

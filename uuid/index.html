@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UUID Generator</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <h1 class="text-4xl font-light mb-8 tracking-wider">UUID Generator</h1>
+
+  <div class="w-full max-w-2xl">
+    <div id="uuidDisplay"
+      class="w-full p-6 text-2xl font-mono rounded-lg break-all transition-colors cursor-pointer mb-4
+             bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600
+             hover:bg-gray-100 dark:hover:bg-gray-700"
+      onclick="copyUUID(this)" title="Click to copy">
+    </div>
+
+    <div class="text-sm opacity-60 mb-6" id="copyStatus">Click UUID to copy</div>
+
+    <div class="flex gap-4 justify-center flex-wrap mb-8">
+      <button onclick="generateOne()"
+        class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+               bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+               hover:opacity-80">Generate</button>
+      <button onclick="generateBulk()"
+        class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+               bg-transparent border border-gray-800 dark:border-gray-200
+               hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Generate 10</button>
+    </div>
+
+    <div class="mb-4 flex gap-4 justify-center items-center">
+      <label class="font-light">Format:</label>
+      <select id="format"
+        class="p-2 rounded-lg cursor-pointer transition-colors
+               bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50">
+        <option value="standard">Standard (with dashes)</option>
+        <option value="nodash">No dashes</option>
+        <option value="uppercase">Uppercase</option>
+        <option value="braces">With braces</option>
+      </select>
+    </div>
+
+    <div id="bulkContainer" class="hidden">
+      <div class="text-xl font-light mb-4 opacity-80">Bulk UUIDs</div>
+      <div id="bulkList"
+        class="p-4 rounded-lg text-left font-mono text-sm max-h-64 overflow-y-auto
+               bg-white/50 dark:bg-gray-800/50">
+      </div>
+      <button onclick="copyAll()"
+        class="mt-4 px-6 py-3 text-lg font-light rounded-lg transition-all cursor-pointer
+               bg-transparent border border-gray-800 dark:border-gray-200
+               hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Copy All</button>
+    </div>
+  </div>
+
+  <script>
+    const uuidDisplay = document.getElementById('uuidDisplay');
+    const copyStatus = document.getElementById('copyStatus');
+    const bulkContainer = document.getElementById('bulkContainer');
+    const bulkList = document.getElementById('bulkList');
+    const formatSelect = document.getElementById('format');
+
+    let bulkUUIDs = [];
+
+    function generateUUID() {
+      // Using crypto.randomUUID if available, fallback to manual generation
+      if (crypto.randomUUID) {
+        return crypto.randomUUID();
+      }
+
+      // Fallback for older browsers
+      const hex = '0123456789abcdef';
+      let uuid = '';
+      const pattern = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx';
+
+      for (let i = 0; i < pattern.length; i++) {
+        const c = pattern[i];
+        if (c === 'x') {
+          uuid += hex[Math.floor(Math.random() * 16)];
+        } else if (c === 'y') {
+          uuid += hex[(Math.floor(Math.random() * 4) + 8)];
+        } else {
+          uuid += c;
+        }
+      }
+
+      return uuid;
+    }
+
+    function formatUUID(uuid) {
+      const format = formatSelect.value;
+
+      switch (format) {
+        case 'nodash':
+          return uuid.replace(/-/g, '');
+        case 'uppercase':
+          return uuid.toUpperCase();
+        case 'braces':
+          return `{${uuid}}`;
+        default:
+          return uuid;
+      }
+    }
+
+    function generateOne() {
+      const uuid = formatUUID(generateUUID());
+      uuidDisplay.textContent = uuid;
+      bulkContainer.classList.add('hidden');
+      copyStatus.textContent = 'Click UUID to copy';
+    }
+
+    function generateBulk() {
+      bulkUUIDs = [];
+      bulkList.textContent = '';
+
+      for (let i = 0; i < 10; i++) {
+        const uuid = formatUUID(generateUUID());
+        bulkUUIDs.push(uuid);
+
+        const div = document.createElement('div');
+        div.className = 'py-2 px-3 hover:bg-gray-200 dark:hover:bg-gray-600 rounded cursor-pointer transition-colors';
+        div.textContent = uuid;
+        div.onclick = () => copyUUID(div);
+        bulkList.appendChild(div);
+      }
+
+      uuidDisplay.textContent = bulkUUIDs[0];
+      bulkContainer.classList.remove('hidden');
+    }
+
+    function copyUUID(element) {
+      const text = element.textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        copyStatus.textContent = 'Copied!';
+        setTimeout(() => {
+          copyStatus.textContent = 'Click UUID to copy';
+        }, 2000);
+      });
+    }
+
+    function copyAll() {
+      const text = bulkUUIDs.join('\n');
+      navigator.clipboard.writeText(text).then(() => {
+        copyStatus.textContent = 'All UUIDs copied!';
+        setTimeout(() => {
+          copyStatus.textContent = 'Click UUID to copy';
+        }, 2000);
+      });
+    }
+
+    formatSelect.addEventListener('change', () => {
+      if (uuidDisplay.textContent) {
+        generateOne();
+      }
+    });
+
+    generateOne();
+  </script>
+</body>
+
+</html>

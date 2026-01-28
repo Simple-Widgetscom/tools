@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kanban</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+  <style>
+    .task {
+      cursor: grab;
+    }
+    .task:active {
+      cursor: grabbing;
+    }
+    .column.drag-over {
+      background: rgba(128, 128, 128, 0.1);
+    }
+  </style>
+</head>
+
+<body class="m-0 font-sans min-h-screen p-4 transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <h1 class="text-4xl font-light text-center mb-8 tracking-wider">Kanban</h1>
+
+  <div class="flex gap-4 justify-center flex-wrap max-w-6xl mx-auto">
+    <!-- To Do Column -->
+    <div class="flex-1 min-w-72 max-w-sm">
+      <div class="text-xl font-light mb-4 text-center opacity-80">To Do</div>
+      <div class="column min-h-96 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 transition-colors"
+           data-column="todo" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+      </div>
+      <input type="text" placeholder="Add task..." data-column="todo"
+        class="w-full mt-4 p-3 rounded-lg font-light transition-colors
+               bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50"
+        onkeypress="addTask(event)">
+    </div>
+
+    <!-- Doing Column -->
+    <div class="flex-1 min-w-72 max-w-sm">
+      <div class="text-xl font-light mb-4 text-center opacity-80">Doing</div>
+      <div class="column min-h-96 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 transition-colors"
+           data-column="doing" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+      </div>
+      <input type="text" placeholder="Add task..." data-column="doing"
+        class="w-full mt-4 p-3 rounded-lg font-light transition-colors
+               bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50"
+        onkeypress="addTask(event)">
+    </div>
+
+    <!-- Done Column -->
+    <div class="flex-1 min-w-72 max-w-sm">
+      <div class="text-xl font-light mb-4 text-center opacity-80">Done</div>
+      <div class="column min-h-96 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 transition-colors"
+           data-column="done" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="dragLeave(event)">
+      </div>
+      <input type="text" placeholder="Add task..." data-column="done"
+        class="w-full mt-4 p-3 rounded-lg font-light transition-colors
+               bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50"
+        onkeypress="addTask(event)">
+    </div>
+  </div>
+
+  <div class="text-center mt-8">
+    <button onclick="clearDone()"
+      class="px-6 py-3 text-lg font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Clear Done</button>
+  </div>
+
+  <script>
+    let tasks = JSON.parse(localStorage.getItem('kanbanTasks')) || { todo: [], doing: [], done: [] };
+    let draggedTask = null;
+
+    function saveTasks() {
+      localStorage.setItem('kanbanTasks', JSON.stringify(tasks));
+    }
+
+    function createTaskElement(text, id) {
+      const task = document.createElement('div');
+      task.className = 'task p-3 mb-2 rounded-lg bg-gray-100 dark:bg-gray-700 transition-colors flex justify-between items-center';
+      task.draggable = true;
+      task.dataset.id = id;
+
+      const textSpan = document.createElement('span');
+      textSpan.className = 'flex-1';
+      textSpan.textContent = text;
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'ml-2 text-gray-400 hover:text-red-500 transition-colors text-xl';
+      deleteBtn.textContent = '\u00d7';
+      deleteBtn.onclick = () => deleteTask(id);
+
+      task.appendChild(textSpan);
+      task.appendChild(deleteBtn);
+
+      task.ondragstart = (e) => {
+        draggedTask = { id, element: task };
+        task.classList.add('opacity-50');
+      };
+
+      task.ondragend = () => {
+        task.classList.remove('opacity-50');
+        draggedTask = null;
+      };
+
+      return task;
+    }
+
+    function renderTasks() {
+      document.querySelectorAll('.column').forEach(column => {
+        const columnName = column.dataset.column;
+        column.textContent = '';
+        tasks[columnName].forEach(task => {
+          column.appendChild(createTaskElement(task.text, task.id));
+        });
+      });
+    }
+
+    function addTask(event) {
+      if (event.key !== 'Enter') return;
+
+      const input = event.target;
+      const text = input.value.trim();
+      if (!text) return;
+
+      const column = input.dataset.column;
+      const id = Date.now().toString();
+
+      tasks[column].push({ id, text });
+      saveTasks();
+      renderTasks();
+
+      input.value = '';
+    }
+
+    function deleteTask(id) {
+      for (const column in tasks) {
+        tasks[column] = tasks[column].filter(task => task.id !== id);
+      }
+      saveTasks();
+      renderTasks();
+    }
+
+    function findTaskColumn(id) {
+      for (const column in tasks) {
+        if (tasks[column].some(task => task.id === id)) {
+          return column;
+        }
+      }
+      return null;
+    }
+
+    function allowDrop(event) {
+      event.preventDefault();
+      event.currentTarget.classList.add('drag-over');
+    }
+
+    function dragLeave(event) {
+      event.currentTarget.classList.remove('drag-over');
+    }
+
+    function drop(event) {
+      event.preventDefault();
+      event.currentTarget.classList.remove('drag-over');
+
+      if (!draggedTask) return;
+
+      const targetColumn = event.currentTarget.dataset.column;
+      const sourceColumn = findTaskColumn(draggedTask.id);
+
+      if (sourceColumn && sourceColumn !== targetColumn) {
+        const taskIndex = tasks[sourceColumn].findIndex(t => t.id === draggedTask.id);
+        const [task] = tasks[sourceColumn].splice(taskIndex, 1);
+        tasks[targetColumn].push(task);
+        saveTasks();
+        renderTasks();
+      }
+    }
+
+    function clearDone() {
+      tasks.done = [];
+      saveTasks();
+      renderTasks();
+    }
+
+    renderTasks();
+  </script>
+</body>
+
+</html>

@@ -1,20 +1,23 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Weather</title>
   <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
 </head>
 
-<body
-  class="m-0 font-sans bg-gray-50 text-gray-800 flex flex-col justify-center items-center h-screen transition-all duration-500 text-center p-8">
-  <div id="weather" class="text-[15vw] font-light mb-8">Getting weather...</div>
+<body class="m-0 font-sans flex flex-col justify-center items-center h-screen transition-colors duration-500 text-center p-8
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+  <div id="weather" class="text-[15vw] font-light mb-8 tracking-wider">Getting weather...</div>
   <div id="location" class="text-4xl font-light mb-4 opacity-80"></div>
   <div id="details" class="text-3xl font-light opacity-60"></div>
   <button onclick="getWeather()"
-    class="text-2xl py-4 px-8 bg-transparent text-gray-800 border border-gray-800 rounded-lg cursor-pointer mt-8 font-sans font-light transition-all duration-300 hover:bg-gray-800 hover:text-gray-50">Refresh</button>
+    class="mt-8 px-8 py-4 text-2xl font-light rounded-lg transition-all cursor-pointer
+           bg-transparent border border-gray-800 dark:border-gray-200
+           hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Refresh</button>
 
   <script>
     async function getWeather() {

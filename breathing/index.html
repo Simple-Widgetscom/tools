@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breathing</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+  <style>
+    .breath-circle {
+      transition: transform 4s ease-in-out, opacity 4s ease-in-out;
+    }
+    .breath-circle.inhale {
+      transform: scale(1.5);
+      opacity: 1;
+    }
+    .breath-circle.exhale {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    .breath-circle.hold {
+      transition: none;
+    }
+  </style>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <div id="instruction" class="text-4xl font-light mb-8 tracking-wider">Ready</div>
+
+  <div class="breath-circle w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mb-8">
+    <div id="counter" class="text-6xl font-light"></div>
+  </div>
+
+  <div id="pattern" class="text-xl font-light mb-8 opacity-60">4-7-8 Pattern</div>
+
+  <div class="flex gap-4 flex-wrap justify-center mb-8">
+    <button id="startStop"
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+             hover:opacity-80">Start</button>
+    <button id="changePattern"
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Change Pattern</button>
+  </div>
+
+  <div class="text-sm opacity-50 max-w-md">
+    Breathe in through your nose, hold, then exhale slowly through your mouth.
+  </div>
+
+  <script>
+    const patterns = [
+      { name: '4-7-8 Pattern', inhale: 4, hold: 7, exhale: 8 },
+      { name: 'Box Breathing', inhale: 4, hold: 4, exhale: 4, hold2: 4 },
+      { name: 'Relaxing 4-4-6', inhale: 4, hold: 4, exhale: 6 },
+      { name: 'Energizing 6-0-6', inhale: 6, hold: 0, exhale: 6 }
+    ];
+
+    let currentPattern = 0;
+    let isRunning = false;
+    let timeout = null;
+
+    const circle = document.querySelector('.breath-circle');
+    const instruction = document.getElementById('instruction');
+    const counter = document.getElementById('counter');
+    const patternDisplay = document.getElementById('pattern');
+    const startStopBtn = document.getElementById('startStop');
+    const changePatternBtn = document.getElementById('changePattern');
+
+    function updatePatternDisplay() {
+      patternDisplay.textContent = patterns[currentPattern].name;
+    }
+
+    function countdown(seconds, callback) {
+      let remaining = seconds;
+      counter.textContent = remaining;
+
+      const tick = () => {
+        remaining--;
+        if (remaining > 0) {
+          counter.textContent = remaining;
+          timeout = setTimeout(tick, 1000);
+        } else {
+          counter.textContent = '';
+          callback();
+        }
+      };
+
+      if (seconds > 0) {
+        timeout = setTimeout(tick, 1000);
+      } else {
+        callback();
+      }
+    }
+
+    function breatheCycle() {
+      if (!isRunning) return;
+
+      const pattern = patterns[currentPattern];
+
+      // Inhale
+      instruction.textContent = 'Breathe In';
+      circle.className = 'breath-circle w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mb-8 inhale';
+
+      countdown(pattern.inhale, () => {
+        if (!isRunning) return;
+
+        // Hold
+        if (pattern.hold > 0) {
+          instruction.textContent = 'Hold';
+          circle.classList.add('hold');
+          countdown(pattern.hold, () => {
+            if (!isRunning) return;
+            startExhale();
+          });
+        } else {
+          startExhale();
+        }
+      });
+    }
+
+    function startExhale() {
+      const pattern = patterns[currentPattern];
+
+      instruction.textContent = 'Breathe Out';
+      circle.className = 'breath-circle w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mb-8 exhale';
+
+      countdown(pattern.exhale, () => {
+        if (!isRunning) return;
+
+        // Hold after exhale (for box breathing)
+        if (pattern.hold2 && pattern.hold2 > 0) {
+          instruction.textContent = 'Hold';
+          circle.classList.add('hold');
+          countdown(pattern.hold2, () => {
+            if (isRunning) breatheCycle();
+          });
+        } else {
+          if (isRunning) breatheCycle();
+        }
+      });
+    }
+
+    function start() {
+      isRunning = true;
+      startStopBtn.textContent = 'Stop';
+      changePatternBtn.disabled = true;
+      changePatternBtn.classList.add('opacity-50');
+      breatheCycle();
+    }
+
+    function stop() {
+      isRunning = false;
+      clearTimeout(timeout);
+      startStopBtn.textContent = 'Start';
+      changePatternBtn.disabled = false;
+      changePatternBtn.classList.remove('opacity-50');
+      instruction.textContent = 'Ready';
+      counter.textContent = '';
+      circle.className = 'breath-circle w-48 h-48 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center mb-8';
+    }
+
+    startStopBtn.addEventListener('click', () => {
+      if (isRunning) {
+        stop();
+      } else {
+        start();
+      }
+    });
+
+    changePatternBtn.addEventListener('click', () => {
+      currentPattern = (currentPattern + 1) % patterns.length;
+      updatePatternDisplay();
+    });
+
+    updatePatternDisplay();
+  </script>
+</body>
+
+</html>

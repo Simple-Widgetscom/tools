@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Generator</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <h1 class="text-4xl font-light mb-8 tracking-wider">Password Generator</h1>
+
+  <div class="w-full max-w-lg">
+    <div class="relative mb-6">
+      <div id="password"
+        class="w-full p-6 text-2xl font-mono rounded-lg break-all transition-colors
+               bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 min-h-20 flex items-center justify-center">
+        Click Generate
+      </div>
+      <button onclick="copyPassword()" id="copyBtn"
+        class="absolute right-3 top-1/2 -translate-y-1/2 px-4 py-2 text-sm font-light rounded transition-all
+               bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">
+        Copy
+      </button>
+    </div>
+
+    <div class="mb-6 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50">
+      <div class="flex justify-between items-center mb-2">
+        <label class="font-light">Length: <span id="lengthValue">16</span></label>
+      </div>
+      <input type="range" id="length" min="8" max="64" value="16"
+        class="w-full h-2 rounded-lg appearance-none cursor-pointer bg-gray-300 dark:bg-gray-600">
+    </div>
+
+    <div class="mb-6 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 text-left">
+      <label class="flex items-center gap-3 mb-3 cursor-pointer">
+        <input type="checkbox" id="uppercase" checked class="w-5 h-5 cursor-pointer">
+        <span class="font-light">Uppercase (A-Z)</span>
+      </label>
+      <label class="flex items-center gap-3 mb-3 cursor-pointer">
+        <input type="checkbox" id="lowercase" checked class="w-5 h-5 cursor-pointer">
+        <span class="font-light">Lowercase (a-z)</span>
+      </label>
+      <label class="flex items-center gap-3 mb-3 cursor-pointer">
+        <input type="checkbox" id="numbers" checked class="w-5 h-5 cursor-pointer">
+        <span class="font-light">Numbers (0-9)</span>
+      </label>
+      <label class="flex items-center gap-3 cursor-pointer">
+        <input type="checkbox" id="symbols" checked class="w-5 h-5 cursor-pointer">
+        <span class="font-light">Symbols (!@#$%^&*)</span>
+      </label>
+    </div>
+
+    <div id="strength" class="mb-6 text-lg font-light opacity-80"></div>
+
+    <button onclick="generatePassword()"
+      class="w-full px-6 py-4 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+             hover:opacity-80">Generate Password</button>
+  </div>
+
+  <script>
+    const passwordDisplay = document.getElementById('password');
+    const lengthSlider = document.getElementById('length');
+    const lengthValue = document.getElementById('lengthValue');
+    const strengthDisplay = document.getElementById('strength');
+
+    const charsets = {
+      uppercase: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+      lowercase: 'abcdefghijklmnopqrstuvwxyz',
+      numbers: '0123456789',
+      symbols: '!@#$%^&*()_+-=[]{}|;:,.<>?'
+    };
+
+    function generatePassword() {
+      const length = parseInt(lengthSlider.value);
+      let chars = '';
+
+      if (document.getElementById('uppercase').checked) chars += charsets.uppercase;
+      if (document.getElementById('lowercase').checked) chars += charsets.lowercase;
+      if (document.getElementById('numbers').checked) chars += charsets.numbers;
+      if (document.getElementById('symbols').checked) chars += charsets.symbols;
+
+      if (!chars) {
+        passwordDisplay.textContent = 'Select at least one option';
+        strengthDisplay.textContent = '';
+        return;
+      }
+
+      const array = new Uint32Array(length);
+      crypto.getRandomValues(array);
+
+      let password = '';
+      for (let i = 0; i < length; i++) {
+        password += chars[array[i] % chars.length];
+      }
+
+      passwordDisplay.textContent = password;
+      updateStrength(password);
+    }
+
+    function updateStrength(password) {
+      let score = 0;
+      if (password.length >= 12) score++;
+      if (password.length >= 16) score++;
+      if (password.length >= 24) score++;
+      if (/[A-Z]/.test(password)) score++;
+      if (/[a-z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[^A-Za-z0-9]/.test(password)) score++;
+
+      const levels = ['Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+      const colors = ['text-red-500', 'text-orange-500', 'text-yellow-500', 'text-green-500', 'text-emerald-500'];
+
+      const index = Math.min(Math.floor(score / 2), 4);
+      strengthDisplay.textContent = `Strength: ${levels[index]}`;
+      strengthDisplay.className = `mb-6 text-lg font-light ${colors[index]}`;
+    }
+
+    function copyPassword() {
+      const password = passwordDisplay.textContent;
+      if (password === 'Click Generate' || password === 'Select at least one option') return;
+
+      navigator.clipboard.writeText(password).then(() => {
+        const copyBtn = document.getElementById('copyBtn');
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy';
+        }, 2000);
+      });
+    }
+
+    lengthSlider.addEventListener('input', () => {
+      lengthValue.textContent = lengthSlider.value;
+    });
+
+    generatePassword();
+  </script>
+</body>
+
+</html>

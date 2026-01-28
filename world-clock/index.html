@@ -1,16 +1,17 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>World Clock</title>
   <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
 </head>
 
-<body
-  class="m-0 font-sans bg-gray-50 text-gray-800 flex flex-col justify-center items-center h-screen transition-all duration-500 text-center p-4">
-  <h1 class="text-[15vw] font-light mb-8">World Clock</h1>
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen transition-colors duration-500 text-center p-4
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+  <h1 class="text-[10vw] font-light mb-8 tracking-wider">World Clock</h1>
   <div id="clocks" class="flex flex-col gap-6"></div>
 
   <script>
@@ -23,24 +24,31 @@
     ];
 
     const clocksDiv = document.getElementById('clocks');
+    let clockElements = [];
+
+    // Create clock elements once
+    cities.forEach(city => {
+      const div = document.createElement('div');
+      div.className = 'text-4xl font-light tracking-wider';
+      div.dataset.tz = city.tz;
+      div.dataset.name = city.name;
+      clocksDiv.appendChild(div);
+      clockElements.push(div);
+    });
 
     function updateClocks() {
-      clocksDiv.innerHTML = '';
       const now = new Date();
 
-      cities.forEach(city => {
+      clockElements.forEach(div => {
         const options = {
-          timeZone: city.tz,
+          timeZone: div.dataset.tz,
           hour: '2-digit',
           minute: '2-digit',
           second: '2-digit',
           hour12: false
         };
         const time = new Intl.DateTimeFormat([], options).format(now);
-        const div = document.createElement('div');
-        div.className = 'text-4xl font-light';
-        div.textContent = `${city.name}: ${time}`;
-        clocksDiv.appendChild(div);
+        div.textContent = `${div.dataset.name}: ${time}`;
       });
     }
 

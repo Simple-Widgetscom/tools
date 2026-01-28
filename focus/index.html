@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Focus Timer</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <div id="mode" class="text-2xl font-light mb-4 opacity-80 tracking-wider">WORK</div>
+
+  <div id="timer" class="text-[15vw] font-light tracking-wider mb-4">25:00</div>
+
+  <div id="sessions" class="text-xl font-light mb-8 opacity-60">Session 1 of 4</div>
+
+  <div class="flex gap-4 flex-wrap justify-center">
+    <button id="startPause"
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-gray-800 text-white dark:bg-gray-100 dark:text-gray-900
+             hover:opacity-80">Start</button>
+    <button id="reset"
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Reset</button>
+    <button id="skip"
+      class="px-6 py-3 text-xl font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">Skip</button>
+  </div>
+
+  <div class="mt-12 flex gap-3">
+    <span class="session-dot w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors"></span>
+    <span class="session-dot w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors"></span>
+    <span class="session-dot w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors"></span>
+    <span class="session-dot w-4 h-4 rounded-full bg-gray-300 dark:bg-gray-600 transition-colors"></span>
+  </div>
+
+  <script>
+    const WORK_DURATION = 25 * 60;
+    const SHORT_BREAK = 5 * 60;
+    const LONG_BREAK = 15 * 60;
+    const SESSIONS_BEFORE_LONG_BREAK = 4;
+
+    let timeRemaining = WORK_DURATION;
+    let isRunning = false;
+    let isWorkMode = true;
+    let currentSession = 1;
+    let interval = null;
+
+    const timerDisplay = document.getElementById('timer');
+    const modeDisplay = document.getElementById('mode');
+    const sessionsDisplay = document.getElementById('sessions');
+    const startPauseBtn = document.getElementById('startPause');
+    const resetBtn = document.getElementById('reset');
+    const skipBtn = document.getElementById('skip');
+    const sessionDots = document.querySelectorAll('.session-dot');
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      timerDisplay.textContent = formatTime(timeRemaining);
+      modeDisplay.textContent = isWorkMode ? 'WORK' : 'BREAK';
+      sessionsDisplay.textContent = `Session ${currentSession} of ${SESSIONS_BEFORE_LONG_BREAK}`;
+
+      sessionDots.forEach((dot, index) => {
+        if (index < currentSession - 1 || (!isWorkMode && index === currentSession - 1)) {
+          dot.classList.remove('bg-gray-300', 'dark:bg-gray-600');
+          dot.classList.add('bg-gray-800', 'dark:bg-gray-200');
+        } else {
+          dot.classList.remove('bg-gray-800', 'dark:bg-gray-200');
+          dot.classList.add('bg-gray-300', 'dark:bg-gray-600');
+        }
+      });
+    }
+
+    function playNotification() {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+
+      oscillator.frequency.value = 440;
+      oscillator.type = 'sine';
+      gainNode.gain.value = 0.3;
+
+      oscillator.start();
+
+      setTimeout(() => {
+        oscillator.stop();
+        audioContext.close();
+      }, 200);
+
+      setTimeout(() => {
+        const osc2 = audioContext.createOscillator();
+        const gain2 = audioContext.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioContext.destination);
+        osc2.frequency.value = 523;
+        osc2.type = 'sine';
+        gain2.gain.value = 0.3;
+        osc2.start();
+        setTimeout(() => osc2.stop(), 200);
+      }, 250);
+    }
+
+    function switchMode() {
+      playNotification();
+
+      if (isWorkMode) {
+        isWorkMode = false;
+        if (currentSession >= SESSIONS_BEFORE_LONG_BREAK) {
+          timeRemaining = LONG_BREAK;
+        } else {
+          timeRemaining = SHORT_BREAK;
+        }
+      } else {
+        isWorkMode = true;
+        if (currentSession >= SESSIONS_BEFORE_LONG_BREAK) {
+          currentSession = 1;
+        } else {
+          currentSession++;
+        }
+        timeRemaining = WORK_DURATION;
+      }
+
+      updateDisplay();
+    }
+
+    function tick() {
+      if (timeRemaining > 0) {
+        timeRemaining--;
+        updateDisplay();
+      } else {
+        switchMode();
+      }
+    }
+
+    function startPause() {
+      if (isRunning) {
+        clearInterval(interval);
+        isRunning = false;
+        startPauseBtn.textContent = 'Start';
+      } else {
+        interval = setInterval(tick, 1000);
+        isRunning = true;
+        startPauseBtn.textContent = 'Pause';
+      }
+    }
+
+    function reset() {
+      clearInterval(interval);
+      isRunning = false;
+      isWorkMode = true;
+      currentSession = 1;
+      timeRemaining = WORK_DURATION;
+      startPauseBtn.textContent = 'Start';
+      updateDisplay();
+    }
+
+    function skip() {
+      clearInterval(interval);
+      isRunning = false;
+      startPauseBtn.textContent = 'Start';
+      switchMode();
+    }
+
+    startPauseBtn.addEventListener('click', startPause);
+    resetBtn.addEventListener('click', reset);
+    skipBtn.addEventListener('click', skip);
+
+    updateDisplay();
+  </script>
+</body>
+
+</html>

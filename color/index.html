@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Picker</title>
+  <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
+</head>
+
+<body class="m-0 font-sans flex flex-col justify-center items-center min-h-screen p-8 text-center transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+
+  <h1 class="text-4xl font-light mb-8 tracking-wider">Color Picker</h1>
+
+  <div class="w-full max-w-md">
+    <div id="colorPreview"
+      class="w-full h-48 rounded-lg mb-6 transition-colors border border-gray-300 dark:border-gray-600"
+      style="background-color: #6366f1;">
+    </div>
+
+    <input type="color" id="colorInput" value="#6366f1"
+      class="w-full h-16 rounded-lg cursor-pointer border-none mb-6">
+
+    <div class="space-y-4">
+      <div class="p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 flex justify-between items-center">
+        <span class="font-light">HEX</span>
+        <div class="flex items-center gap-2">
+          <span id="hexValue" class="font-mono text-lg">#6366f1</span>
+          <button onclick="copyValue('hex')" class="px-3 py-1 text-sm rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition-all">Copy</button>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 flex justify-between items-center">
+        <span class="font-light">RGB</span>
+        <div class="flex items-center gap-2">
+          <span id="rgbValue" class="font-mono text-lg">rgb(99, 102, 241)</span>
+          <button onclick="copyValue('rgb')" class="px-3 py-1 text-sm rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition-all">Copy</button>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 flex justify-between items-center">
+        <span class="font-light">HSL</span>
+        <div class="flex items-center gap-2">
+          <span id="hslValue" class="font-mono text-lg">hsl(239, 84%, 67%)</span>
+          <button onclick="copyValue('hsl')" class="px-3 py-1 text-sm rounded bg-gray-200 dark:bg-gray-700 hover:opacity-80 transition-all">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="text-lg font-light mb-4 opacity-80">Quick Colors</div>
+      <div class="flex flex-wrap gap-2 justify-center">
+        <button onclick="setColor('#ef4444')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #ef4444;"></button>
+        <button onclick="setColor('#f97316')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #f97316;"></button>
+        <button onclick="setColor('#eab308')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #eab308;"></button>
+        <button onclick="setColor('#22c55e')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #22c55e;"></button>
+        <button onclick="setColor('#06b6d4')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #06b6d4;"></button>
+        <button onclick="setColor('#3b82f6')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #3b82f6;"></button>
+        <button onclick="setColor('#8b5cf6')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #8b5cf6;"></button>
+        <button onclick="setColor('#ec4899')" class="w-10 h-10 rounded-lg border border-gray-300 dark:border-gray-600 hover:scale-110 transition-transform" style="background: #ec4899;"></button>
+      </div>
+    </div>
+
+    <button onclick="randomColor()"
+      class="mt-8 px-6 py-3 text-lg font-light rounded-lg transition-all cursor-pointer
+             bg-transparent border border-gray-800 dark:border-gray-200
+             hover:bg-gray-800 hover:text-white dark:hover:bg-gray-200 dark:hover:text-gray-900">
+      Random Color
+    </button>
+  </div>
+
+  <script>
+    const colorInput = document.getElementById('colorInput');
+    const colorPreview = document.getElementById('colorPreview');
+    const hexValue = document.getElementById('hexValue');
+    const rgbValue = document.getElementById('rgbValue');
+    const hslValue = document.getElementById('hslValue');
+
+    function hexToRgb(hex) {
+      const pattern = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i;
+      const result = pattern.test(hex) ? pattern.exec(hex) : null;
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    }
+
+    function rgbToHsl(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+        switch (max) {
+          case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+          case g: h = ((b - r) / d + 2) / 6; break;
+          case b: h = ((r - g) / d + 4) / 6; break;
+        }
+      }
+
+      return {
+        h: Math.round(h * 360),
+        s: Math.round(s * 100),
+        l: Math.round(l * 100)
+      };
+    }
+
+    function updateColor(hex) {
+      colorInput.value = hex;
+      colorPreview.style.backgroundColor = hex;
+
+      const rgb = hexToRgb(hex);
+      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+      hexValue.textContent = hex.toUpperCase();
+      rgbValue.textContent = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+      hslValue.textContent = `hsl(${hsl.h}, ${hsl.s}%, ${hsl.l}%)`;
+    }
+
+    function setColor(hex) {
+      updateColor(hex);
+    }
+
+    function randomColor() {
+      const hex = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      updateColor(hex);
+    }
+
+    function copyValue(type) {
+      let text;
+      switch (type) {
+        case 'hex': text = hexValue.textContent; break;
+        case 'rgb': text = rgbValue.textContent; break;
+        case 'hsl': text = hslValue.textContent; break;
+      }
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = event.target;
+        btn.textContent = 'Copied!';
+        setTimeout(() => {
+          btn.textContent = 'Copy';
+        }, 1500);
+      });
+    }
+
+    colorInput.addEventListener('input', (e) => {
+      updateColor(e.target.value);
+    });
+
+    updateColor('#6366f1');
+  </script>
+</body>
+
+</html>

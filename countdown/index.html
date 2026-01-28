@@ -1,17 +1,20 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Countdown Timer</title>
   <link href="../assets/output.css" rel="stylesheet">
+  <script src="../assets/theme.js"></script>
 </head>
 
-<body
-  class="m-0 font-sans bg-gray-50 text-gray-800 flex flex-col justify-center items-center h-screen text-center gap-8">
-  <input type="datetime-local" id="datetimeInput" class="text-[6vw] p-3 border border-gray-300 rounded-lg font-light" />
-  <div id="countdown" class="text-[6vw] font-light">Select a date and time</div>
+<body class="m-0 font-sans flex flex-col justify-center items-center h-screen text-center gap-8 p-4 transition-colors duration-500
+             bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-50">
+  <input type="datetime-local" id="datetimeInput"
+    class="text-[6vw] p-3 rounded-lg font-light transition-colors
+           bg-white border border-gray-300 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-50" />
+  <div id="countdown" class="text-[6vw] font-light tracking-wider">Select a date and time</div>
 
   <script>
     let countdownInterval;
